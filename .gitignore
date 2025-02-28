@@ -1,0 +1,33 @@
+# Byte-compiled / Cached files
+__pycache__/
+*.py[cod]
+*.so
+*.pyo
+*.pyd
+
+# Virtual environment
+venv/
+.env/
+*.venv
+env/
+Pipfile
+Pipfile.lock
+
+
+
+# Logs & Debug Files
+*.log
+debug.log
+scrapy.log
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Python IDE / Editor files
+.vscode/
+.idea/
+*.iml
+

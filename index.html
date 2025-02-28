@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Modern Earthquake Map</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    html, body {
+      width: 100%;
+      height: 100%;
+      font-family: "Arial", sans-serif;
+      background-color: #f6f6f6;
+    }
+    #map {
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+    .top-bar {
+      position: absolute;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background-color: rgba(255, 255, 255, 0.95);
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+      padding: 1rem;
+      min-width: 320px;
+      z-index: 1001;
+    }
+    .top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      margin-bottom: 0.8rem;
+    }
+    .logo-title {
+      font-weight: 600;
+      font-size: 1.1rem;
+      color: #444;
+      margin-right: 1rem;
+      white-space: nowrap;
+    }
+
+    .download-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    .download-btn {
+      text-decoration: none;
+      color: #fff;
+      background-color: #4285f4;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      transition: background-color 0.2s ease;
+    }
+    .download-btn:hover {
+      background-color: #3071e8;
+    }
+    #legend {
+      position: absolute;
+      bottom: 80px;
+      left: 20px;
+      background-color: rgba(255,255,255,0.95);
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 14px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      z-index: 1001;
+    }
+    .legend-title {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: #333;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+    .legend-color {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background-color: red;
+      margin-right: 5px;
+      border: 1px solid darkred;
+    }
+    .disclaimer {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: rgba(255,255,255,0.9);
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      z-index: 1001;
+      color: #444;
+      text-align: center;
+    }
+    .disclaimer a {
+      color: #4285f4;
+      text-decoration: none;
+    }
+    .disclaimer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+<div id="map"></div>
+
+<div class="top-bar">
+    <div class="top-row">
+    <div class="logo-title">Nepal Earthquake Data</div>
+  </div>
+  <div class="download-buttons">
+    <a href="earthquakes.csv" download class="download-btn">Download CSV</a>
+    <a href="earthquakes.json" download class="download-btn">Download JSON</a>
+    <a href="earthquakes.geojson" download class="download-btn">Download GeoJSON</a>
+  </div>
+</div>
+
+<div id="legend">
+  <div class="legend-title">Legend</div>
+  <div class="legend-item">
+    <div class="legend-color"></div>
+    <span>Earthquake Epicenter</span>
+  </div>
+</div>
+
+<div class="disclaimer">
+    The data presented on this map has been sourced from the official website of the National Seismological Center of Nepal. For more detailed information and updates, please visit their site at <a href="https://www.seismonepal.gov.np/earthquakes" target="_blank">www.seismonepal.gov.np/earthquakes</a>.
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+<script>
+  const map = L.map('map').setView([27.7, 85.3], 7);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+
+  fetch('earthquakes.geojson')
+    .then(response => response.json())
+    .then(geojsonData => {
+      L.geoJSON(geojsonData, {
+        onEachFeature: (feature, layer) => {
+          const props = feature.properties || {};
+          const info = Object.entries(props)
+            .map(([key, val]) => `<strong>${key}</strong>: ${val}<br>`)
+            .join('');
+          layer.bindPopup(info);
+        },
+        pointToLayer: (feature, latlng) => {
+          return L.circleMarker(latlng, {
+            radius: 4,
+            fillColor: 'red',
+            color: 'darkred',
+            weight: 1,
+            opacity: 1,
+            fillOpacity: 0.7
+          });
+        }
+      }).addTo(map);
+    })
+    .catch(err => console.error('Error loading GeoJSON:', err));
+</script>
+</body>
+</html>
