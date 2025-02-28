@@ -1,4 +1,4 @@
-# 🌍 Earthquake Data Scraper & Interactive Map
+# 🌍 Nepal Earthquake Epicenter Data 
 
 This project scrapes recent earthquake data from the **National Earthquake Monitoring and Research Center, Government of Nepal, Ministry of Industry, Commerce and Supplies, Department of Mines and Geology** and visualizes it on an interactive **Leaflet.js** map. The scraped data is available in **CSV, JSON, and GeoJSON** formats for easy access and analysis. You can view and download the data on **[this page](https://konishon.github.io/nepal-earthquake-epicenter-data/)**.
 
