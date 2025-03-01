@@ -4,6 +4,71 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Earthquake Map</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="title" content="Nepal Earthquake Epicenter Data">
+  <meta name="description" content="The data is scraped from the National Earthquake Monitoring and Research Center website and is updated periodically. The code for scraping is open source and available at https://github.com/YOUR_GITHUB_REPO.">
+  <meta name="keywords" content="Nepal Earthquake Data, Seismic Activity Nepal, Earthquake Map Nepal, Seismology, GeoJSON Earthquake">
+  <meta name="robots" content="index, follow">
+  <meta name="author" content="Nepal Earthquake Data Project">
+  <meta name="language" content="English">
+  <meta name="theme-color" content="#4285f4">
+
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Nepal Earthquake Epicenter Data">
+  <meta property="og:description" content="Explore real-time earthquake data in Nepal sourced from the National Earthquake Monitoring and Research Center. View earthquake epicenters on an interactive map.">
+  <meta property="og:url" content="https://www.seismonepal.gov.np/earthquakes">
+  <meta property="og:site_name" content="Nepal Earthquake Data">
+  <meta property="og:image" content="https://konishon.github.io/nepal-earthquake-epicenter-data/public/og_image.png">
+  
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Nepal Earthquake Epicenter Data">
+  <meta name="twitter:description" content="Explore real-time earthquake data in Nepal sourced from the National Earthquake Monitoring and Research Center. View earthquake epicenters on an interactive map.">
+  <meta name="twitter:image" content="https://konishon.github.io/nepal-earthquake-epicenter-data/public/twitter-image.png">
+  <meta name="twitter:site" content="@YourTwitterHandle">
+
+  <link rel="canonical" href="https://github.com/konishon/nepal-earthquake-epicenter-data">
+
+  <link rel="icon" href="https://konishon.github.io/nepal-earthquake-epicenter-data/public/favicon.ico" type="image/x-icon">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    "name": "Nepal Earthquake Epicenter Data",
+    "description": "The data is scraped from the National Earthquake Monitoring and Research Center website and is updated periodically. The code for scraping is open source and available at https://github.com/YOUR_GITHUB_REPO.",
+    "url": "https://github.com/konishon/nepal-earthquake-epicenter-data",
+    "creator": {
+      "@type": "Organization",
+      "name": "Nishon",
+      "url": "https://github.com/konishon/"
+    },
+    "keywords": [
+      "Nepal Earthquake Data",
+      "Seismic Activity Nepal",
+      "Earthquake Map Nepal",
+      "Seismology",
+      "GeoJSON Earthquake"
+    ],
+    "distribution": [
+      {
+        "@type": "DataDownload",
+        "encodingFormat": "CSV",
+        "contentUrl": "https://konishon.github.io/nepal-earthquake-epicenter-data/earthquakes.csv"
+      },
+      {
+        "@type": "DataDownload",
+        "encodingFormat": "JSON",
+        "contentUrl": "https://konishon.github.io/nepal-earthquake-epicenter-data/earthquakes.json"
+      },
+      {
+        "@type": "DataDownload",
+        "encodingFormat": "GeoJSON",
+        "contentUrl": "https://konishon.github.io/nepal-earthquake-epicenter-data/earthquakes.geojson"
+      }
+    ]
+  }
+  </script>
+
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
