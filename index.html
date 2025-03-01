@@ -67,7 +67,7 @@
 <button class="metadata-btn" onclick="togglePanel()">ℹ️</button>
 
 <div class="right-panel" id="info-panel">
-  <div class="metadata-title">Earthquake Epicenter Data</div>
+  <div class="metadata-title">Nepal Earthquake Epicenter Data</div>
   <p style="margin-bottom: 1rem; color: #555; text-align: center;">
     Recorded by the <strong>National Earthquake Monitoring and Research Center</strong>
   </p>
@@ -105,10 +105,14 @@
     <a href="earthquakes.geojson" download class="download-btn">Download GeoJSON</a>
   </div>
 
-  <div class="data-source" style="margin-top: 10px; text-align: center;">
+<div class="data-source" style="margin-top: 10px; text-align: center;">
     Data sourced from the <br>
     <a href="https://www.seismonepal.gov.np/earthquakes" target="_blank">National Earthquake Monitoring and Research Center</a>.
-  </div>
+    <p style="margin-top: 10px;">
+        The data is scraped from the National Earthquake Monitoring and Research Center website and is updated periodically. The code for scraping is open source and available at 
+        <a href="https://github.com/konishon/nepal-earthquake-epicenter-data" target="_blank">GitHub</a>.
+    </p>
+</div>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
