@@ -2,180 +2,148 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Modern Earthquake Map</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Earthquake Map</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css">
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    html, body {
-      width: 100%;
-      height: 100%;
-      font-family: "Arial", sans-serif;
-      background-color: #f6f6f6;
-    }
-    #map {
-      width: 100%;
-      height: 100%;
-      position: relative;
-    }
-    .top-bar {
-      position: absolute;
-      top: 16px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      background-color: rgba(255, 255, 255, 0.95);
-      border-radius: 12px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-      padding: 1rem;
-      min-width: 320px;
-      z-index: 1001;
-    }
-    .top-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      width: 100%;
-      margin-bottom: 0.8rem;
-    }
-    .logo-title {
-      font-weight: 600;
-      font-size: 1.1rem;
-      color: #444;
-      margin-right: 1rem;
-      white-space: nowrap;
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; font-family: "Arial", sans-serif; background-color: #f6f6f6; display: flex; }
+
+    #map { flex-grow: 1; height: 100%; position: relative; }
+
+    .right-panel {
+      width: 350px; height: 100vh; position: absolute; top: 0; right: 0;
+      background-color: rgba(255,255,255,0.98); padding: 1rem;
+      box-shadow: -4px 0 8px rgba(0,0,0,0.15);
+      overflow-y: auto; font-size: 14px; z-index: 1001;
+      transition: transform 0.3s ease-in-out;
     }
 
-    .download-buttons {
-      display: flex;
-      justify-content: center;
-      gap: 0.5rem;
+    .metadata-title { font-weight: bold; font-size: 1.2rem; margin-bottom: 0.5rem; color: #444; text-align: center; }
+
+    .metadata-table {
+      width: 100%; border-collapse: collapse; margin-bottom: 1rem;
     }
+    .metadata-table th, .metadata-table td {
+      border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 13px;
+    }
+    .metadata-table th { background-color: #f4f4f4; font-weight: bold; width: 35%; }
+
+    .download-section { margin-top: 1rem; text-align: center; }
     .download-btn {
-      text-decoration: none;
-      color: #fff;
-      background-color: #4285f4;
-      padding: 0.5rem 1rem;
-      border-radius: 4px;
-      font-size: 0.9rem;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-      transition: background-color 0.2s ease;
+      display: block; text-decoration: none; color: #fff; background-color: #4285f4;
+      padding: 0.5rem; border-radius: 4px; font-size: 0.9rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2); transition: background-color 0.2s ease; text-align: center;
+      margin-bottom: 6px;
     }
-    .download-btn:hover {
-      background-color: #3071e8;
-    }
-    #legend {
-      position: absolute;
-      bottom: 80px;
-      left: 20px;
-      background-color: rgba(255,255,255,0.95);
-      padding: 10px;
-      border-radius: 8px;
-      font-size: 14px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-      z-index: 1001;
-    }
-    .legend-title {
-      font-weight: 600;
-      margin-bottom: 0.5rem;
-      color: #333;
-    }
-    .legend-item {
-      display: flex;
-      align-items: center;
-      margin-bottom: 5px;
-    }
+    .download-btn:hover { background-color: #3071e8; }
+
+    .legend-title { font-weight: 600; margin-bottom: 0.5rem; color: #333; text-align: center; }
+    .legend-item { display: flex; align-items: center; margin-bottom: 5px; }
     .legend-color {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      background-color: red;
-      margin-right: 5px;
-      border: 1px solid darkred;
+      width: 14px; height: 14px; border-radius: 50%; margin-right: 8px; border: 1px solid #000;
     }
-    .disclaimer {
-      position: absolute;
-      bottom: 10px;
-      left: 50%;
-      transform: translateX(-50%);
-      background-color: rgba(255,255,255,0.9);
-      padding: 0.5rem 1rem;
-      border-radius: 8px;
-      font-size: 0.85rem;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-      z-index: 1001;
-      color: #444;
-      text-align: center;
-    }
-    .disclaimer a {
-      color: #4285f4;
-      text-decoration: none;
-    }
-    .disclaimer a:hover {
-      text-decoration: underline;
+
+    @media (max-width: 768px) {
+      .right-panel {
+        width: 100%; max-width: 350px; transform: translateX(100%);
+        position: fixed; right: 0; top: 0; bottom: 0;
+      }
+      .right-panel.open { transform: translateX(0); }
+
+      .metadata-btn {
+        position: absolute; top: 15px; right: 15px;
+        background: #4285f4; color: #fff; padding: 12px 15px;
+        border-radius: 50%; font-size: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        border: none; cursor: pointer; z-index: 1002;
+      }
     }
   </style>
 </head>
 <body>
+
 <div id="map"></div>
 
-<div class="top-bar">
-    <div class="top-row">
-    <div class="logo-title">Nepal Earthquake Data</div>
+<button class="metadata-btn" onclick="togglePanel()">ℹ️</button>
+
+<div class="right-panel" id="info-panel">
+  <div class="metadata-title">Earthquake Epicenter Data</div>
+  <p style="margin-bottom: 1rem; color: #555; text-align: center;">
+    Recorded by the <strong>National Earthquake Monitoring and Research Center</strong>
+  </p>
+  <p style="margin-bottom: 1rem; color: #555;">
+    The data contains the following metadata:
+  </p>
+
+  <table class="metadata-table">
+    <tr><th>ID</th><td>Unique identifier for each earthquake event.</td></tr>
+    <tr><th>Date (B.S.)</th><td>Date in the Bikram Sambat (B.S.) calendar.</td></tr>
+    <tr><th>Date (A.D.)</th><td>Date in the Gregorian (A.D.) calendar.</td></tr>
+    <tr><th>Local Time</th><td>Time of the earthquake in Nepal local time (NPT).</td></tr>
+    <tr><th>UTC Time</th><td>Time of the earthquake in Coordinated Universal Time (UTC).</td></tr>
+    <tr><th>Magnitude</th><td>Strength of the earthquake measured on the Richter scale.</td></tr>
+    <tr><th>Epicenter</th><td>Location where the earthquake originated.</td></tr>   
+  </table>
+
+  <div class="legend-title">Magnitude Legend</div>
+  <div class="legend-item">
+    <div class="legend-color" style="background-color: green; border: 1px solid darkgreen;"></div>
+    <span>Magnitude &lt; 4.0 (Low)</span>
   </div>
-  <div class="download-buttons">
+  <div class="legend-item">
+    <div class="legend-color" style="background-color: orange; border: 1px solid darkorange;"></div>
+    <span>Magnitude 4.0 - 5.9 (Moderate)</span>
+  </div>
+  <div class="legend-item">
+    <div class="legend-color" style="background-color: red; border: 1px solid darkred;"></div>
+    <span>Magnitude ≥ 6.0 (High)</span>
+  </div>
+
+  <div class="download-section">
     <a href="earthquakes.csv" download class="download-btn">Download CSV</a>
     <a href="earthquakes.json" download class="download-btn">Download JSON</a>
     <a href="earthquakes.geojson" download class="download-btn">Download GeoJSON</a>
   </div>
-</div>
 
-<div id="legend">
-  <div class="legend-title">Legend</div>
-  <div class="legend-item">
-    <div class="legend-color"></div>
-    <span>Earthquake Epicenter</span>
+  <div class="data-source" style="margin-top: 10px; text-align: center;">
+    Data sourced from the <br>
+    <a href="https://www.seismonepal.gov.np/earthquakes" target="_blank">National Earthquake Monitoring and Research Center</a>.
   </div>
-</div>
-
-<div class="disclaimer">
-    The data presented on this map has been sourced from the official website of the National Seismological Center of Nepal. For more detailed information and updates, please visit their site at <a href="https://www.seismonepal.gov.np/earthquakes" target="_blank">www.seismonepal.gov.np/earthquakes</a>.
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
 <script>
+  function togglePanel() {
+    document.getElementById("info-panel").classList.toggle("open");
+  }
+
   const map = L.map('map').setView([27.7, 85.3], 7);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+
+  function getColor(magnitude) {
+    return magnitude >= 6.0 ? 'red' :
+           magnitude >= 4.0 ? 'orange' : 'green';
+  }
 
   fetch('earthquakes.geojson')
     .then(response => response.json())
     .then(geojsonData => {
       L.geoJSON(geojsonData, {
-        onEachFeature: (feature, layer) => {
-          const props = feature.properties || {};
-          const info = Object.entries(props)
-            .map(([key, val]) => `<strong>${key}</strong>: ${val}<br>`)
-            .join('');
-          layer.bindPopup(info);
-        },
-        pointToLayer: (feature, latlng) => {
-          return L.circleMarker(latlng, {
-            radius: 4,
-            fillColor: 'red',
-            color: 'darkred',
-            weight: 1,
-            opacity: 1,
-            fillOpacity: 0.7
-          });
-        }
+        pointToLayer: (feature, latlng) => L.circleMarker(latlng, { 
+          radius: 8, fillColor: getColor(feature.properties.magnitude),
+          color: "#000", weight: 1, opacity: 1, fillOpacity: 0.8 
+        }),
+        onEachFeature: (feature, layer) => layer.bindPopup(`
+          <strong>ID:</strong> ${feature.properties.id}<br>
+          <strong>Date (B.S.):</strong> ${feature.properties.date_bs}<br>
+          <strong>Date (A.D.):</strong> ${feature.properties.date_ad}<br>
+          <strong>Local Time:</strong> ${feature.properties.local_time}<br>
+          <strong>UTC Time:</strong> ${feature.properties.utc_time}<br>
+          <strong>Magnitude:</strong> ${feature.properties.magnitude}<br>
+          <strong>Epicenter:</strong> ${feature.properties.epicenter}
+        `)
       }).addTo(map);
-    })
-    .catch(err => console.error('Error loading GeoJSON:', err));
+    });
 </script>
 </body>
 </html>
