@@ -19,7 +19,9 @@ jobs:
           python-version: "3.11"
 
       - name: Install Dependencies
-        run: pip install -r requirements.txt
+        run: |
+          pip install -r requirements.txt
+          playwright install  # Ensures Playwright browsers are installed
 
       - name: Run Scraper
         run: python scrape_earthquake_data_nepal.py
