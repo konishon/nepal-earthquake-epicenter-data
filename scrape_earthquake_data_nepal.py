@@ -4,50 +4,11 @@ import csv
 import geojson
 import time
 import random
+import hashlib
 from bs4 import BeautifulSoup
 from playwright.sync_api import sync_playwright
 
 class EarthquakeScraper:
-    """
-    A class to scrape earthquake data from the Nepal Seismological Center website.
-
-    Attributes:
-        base_url (str): The base URL for the earthquake data pages.
-        page_num (int): The current page number being scraped.
-        data_list (list): A list to store the scraped earthquake data.
-        existing_data (set): A set to store the IDs of existing earthquake records.
-
-    Methods:
-        __init__():
-            Initializes the EarthquakeScraper with default values and loads existing data.
-        
-        load_existing_data():
-            Loads existing earthquake data from a JSON file into the existing_data set.
-        
-        run():
-            Starts the scraping process, iterating through pages until no new data is found or no further pages exist.
-        
-        parse_page(html):
-            Parses the HTML content of a page to extract earthquake data.
-        
-        extract_record(row):
-            Extracts earthquake data from a table row and returns it as a dictionary.
-        
-        check_next_page(html):
-            Checks if there is a next page link in the HTML content.
-        
-        export_data(new_data):
-            Exports the new earthquake data to CSV, JSON, and GeoJSON files.
-        
-        export_csv(new_data):
-            Appends new earthquake data to a CSV file, creating the file if it does not exist.
-        
-        export_json(new_data):
-            Appends new earthquake data to a JSON file, creating the file if it does not exist.
-        
-        export_geojson(new_data):
-            Appends new earthquake data to a GeoJSON file, creating the file if it does not exist.
-    """
     def __init__(self):
         self.base_url = "https://www.seismonepal.gov.np/earthquakes/index?page="
         self.page_num = 1
@@ -56,42 +17,14 @@ class EarthquakeScraper:
         self.load_existing_data()
 
     def load_existing_data(self):
-        """
-        Loads existing earthquake data from a JSON file.
-
-        This method attempts to read earthquake records from a file named 
-        "earthquakes.json". If the file is found and contains valid JSON data, 
-        it extracts the "id" field from each record and stores them in the 
-        `self.existing_data` set. If the file is not found or contains invalid 
-        JSON, `self.existing_data` is initialized as an empty set.
-
-        Raises:
-            FileNotFoundError: If the "earthquakes.json" file does not exist.
-            json.JSONDecodeError: If the file contains invalid JSON data.
-        """
         try:
-            with open("earthquakes.json", "r", encoding="utf-8") as f:
-                existing_records = json.load(f)
-                self.existing_data = {record["id"] for record in existing_records}
-        except (FileNotFoundError, json.JSONDecodeError):
+            with open("earthquakes.csv", "r", encoding="utf-8") as f:
+                reader = csv.DictReader(f)
+                self.existing_data = {row["uin"] for row in reader}
+        except (FileNotFoundError, KeyError):
             self.existing_data = set()
 
     def run(self):
-        """
-        Runs the web scraping process using Playwright.
-
-        This method launches a headless Chromium browser, navigates to the target URL, 
-        and scrapes data from the specified pages. It continues to scrape until no new 
-        data is found or no further pages are available.
-
-        Raises:
-            TimeoutError: If the table element is not found within the specified timeout.
-
-        Note:
-            The method includes a random sleep interval between page requests to mimic 
-            human behavior and avoid detection.
-
-        """
         with sync_playwright() as p:
             browser = p.chromium.launch(
                 headless=True,
@@ -117,11 +50,9 @@ class EarthquakeScraper:
                     self.export_data(new_data)
                     print(f"Found {len(new_data)} new records on page {self.page_num}.")
                 else:
-                    # If a page has zero new data, we assume older pages won't have any new data
                     print(f"No new data found on page {self.page_num}. Stopping here.")
                     break
 
-                # If there's a next page, keep going; 
                 if not self.check_next_page(html):
                     print("No further pages found. Done scraping.")
                     break
@@ -132,23 +63,14 @@ class EarthquakeScraper:
             browser.close()
 
     def parse_page(self, html):
-        """
-        Parses the HTML content of a webpage to extract earthquake data.
-
-        Args:
-            html (str): The HTML content of the webpage to parse.
-
-        Returns:
-            list: A list of new earthquake records extracted from the page. Each record is a dictionary containing the earthquake data.
-        """
         soup = BeautifulSoup(html, "html.parser")
         rows = soup.select("table.table-striped tbody tr")
         new_data = []
 
         for row in rows:
             record = self.extract_record(row)
-            if record and record["id"] not in self.existing_data:
-                self.existing_data.add(record["id"])
+            if record and record["uin"] not in self.existing_data:
+                self.existing_data.add(record["uin"])
                 self.data_list.append(record)
                 new_data.append(record)
 
@@ -174,7 +96,7 @@ class EarthquakeScraper:
             epicenter_el = cols[6].find("a")
             epicenter = epicenter_el.get_text(strip=True) if epicenter_el else ""
 
-            return {
+            record = {
                 "id": record_id,
                 "date_bs": date_bs,
                 "date_ad": date_ad,
@@ -185,12 +107,17 @@ class EarthquakeScraper:
                 "magnitude": magnitude,
                 "epicenter": epicenter
             }
+
+            # Generate UIN by hashing the record data
+            record_str = json.dumps(record, sort_keys=True)
+            record["uin"] = hashlib.sha256(record_str.encode('utf-8')).hexdigest()
+
+            return record
         except (IndexError, ValueError, AttributeError) as e:
             print(f"Error parsing row: {e}")
             return None
 
     def check_next_page(self, html):
-        """Returns True if there's a next page link; otherwise False."""
         soup = BeautifulSoup(html, "html.parser")
         active_li = soup.select_one("ul.pagination li.active")
         if not active_li:
