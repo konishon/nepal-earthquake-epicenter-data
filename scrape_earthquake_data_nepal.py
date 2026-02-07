@@ -30,18 +30,39 @@ class EarthquakeScraper:
                 headless=True,
                 args=["--disable-blink-features=AutomationControlled"]
             )
-            context = browser.new_context()
+            context = browser.new_context(
+                ignore_https_errors=True,
+                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            )
             page = context.new_page()
 
             while True:
                 url = f"{self.base_url}{self.page_num}"
                 print(f"Scraping page {self.page_num}: {url}")
-                page.goto(url)
-                try:
-                    page.wait_for_selector("table.table-striped", timeout=10000)
-                except TimeoutError:
-                    print("No table found or page timed out. Stopping.")
-                    break
+                
+
+                max_retries = 3
+                for attempt in range(max_retries):
+                    try:
+                        page.goto(url, timeout=30000, wait_until="domcontentloaded")
+                        page.wait_for_selector("table.table-striped", timeout=10000)
+                        break
+                    except TimeoutError:
+                        if attempt < max_retries - 1:
+                            print(f"Timeout on attempt {attempt + 1}, retrying...")
+                            time.sleep(2)
+                        else:
+                            print("No table found or page timed out after retries. Stopping.")
+                            browser.close()
+                            return
+                    except Exception as e:
+                        if attempt < max_retries - 1:
+                            print(f"Error on attempt {attempt + 1}: {e}, retrying...")
+                            time.sleep(2)
+                        else:
+                            print(f"Failed after {max_retries} attempts: {e}")
+                            browser.close()
+                            return
 
                 html = page.content()
                 new_data = self.parse_page(html)
